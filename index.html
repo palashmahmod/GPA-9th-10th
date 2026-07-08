@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>৯ম-১০ম ফলাফল ম্যানেজার V20</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Arial', sans-serif; background-color: #f4f7f6; padding: 10px; color: #333; margin: 0; }
+        .container { width: 100%; max-width: 800px; margin: 0 auto; background: #fff; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        
+        /* লগইন স্ক্রিন ডিজাইন */
+        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #2c3e50; display: flex; justify-content: center; align-items: center; z-index: 10000; }
+        .login-box { background: white; padding: 25px; border-radius: 15px; text-align: center; width: 90%; max-width: 340px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+        
+        .profile-area { display: flex; align-items: center; justify-content: flex-start; gap: 15px; margin-bottom: 15px; text-align: left; }
+        .profile-img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; border: 2px solid #2c3e50; }
+        .profile-name { font-size: 20px; font-weight: bold; color: #2c3e50; margin: 0; }
+        
+        .divider { height: 2px; background-color: #2c3e50; margin: 15px 0; border: none; }
+        .app-title { font-size: 18px; font-weight: bold; color: #34495e; margin: 10px 0 20px 0; text-align: center; }
+        
+        .login-box input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; text-align: center; font-size: 16px; }
+        .login-box button { width: 100%; padding: 12px; background: #2c3e50; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; }
+        
+        /* শিক্ষক ও ক্লাসের ডাইনামিক হেডার */
+        .teacher-info-bar { background: #34495e; color: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: center; font-weight: bold; font-size: 14px; line-height: 1.5; }
+        .teacher-info-bar .profile-area { justify-content: center; margin-bottom: 12px; }
+        .teacher-info-bar .profile-img { border-color: #fff; }
+        .teacher-info-bar .profile-name { color: #fff; }
+        .logout-btn { background: #e74c3c; color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-top: 8px; font-weight: bold; }
+        .header { text-align: center; border-bottom: 2px solid #2c3e50; margin-bottom: 15px; padding-bottom: 10px; }
+        .header h1 { font-size: 1.3em; margin: 5px 0; color: #2c3e50; font-weight: bold; }
+        
+        #inputSection { padding: 15px; border: 1px solid #3498db; border-radius: 10px; background-color: #ebf5fb; margin-bottom: 20px; }
+        .main-inputs { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; margin-bottom: 15px; }
+        .main-inputs input { width: 100%; padding: 10px; border: 2px solid #3498db; border-radius: 6px; font-size: 16px; font-weight: bold; }
+        
+        .subject-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+        .subject-table th, .subject-table td { border: 1px solid #b2ebf2; padding: 8px 4px; text-align: center; font-size: 14px; }
+        .edit-btn { cursor: pointer; color: #3498db; background: none; border: none; font-size: 12px; font-weight: bold; }
+        .mark-input { width: 90%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; text-align: center; font-size: 16px; font-weight: bold; }
+        
+        .summary-box { background: #d4edda; padding: 10px; border: 1px solid #c3e6cb; margin-bottom: 15px; border-radius: 8px; text-align: center; font-weight: bold; display: none; }
+        .button-group { display: flex; gap: 10px; }
+        .button-group button { flex: 1; padding: 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; font-size: 16px; }
+        
+        #calcBtn { background: #3498db; }
+        #saveBtn { background: #27ae60; }
+        
+        .report-section { margin-top: 25px; }
+        .report-table { width: 100%; border-collapse: collapse; background: white; margin-top: 10px; }
+        .report-table th, .report-table td { border: 1px solid #333; padding: 8px 4px; text-align: center; font-size: 13px; font-weight: bold; }
+        .st-input { width: 100%; border: none; background: transparent; text-align: center; font-weight: bold; }
+        
+        /* একক ডিলিট বাটনের স্টাইল */
+        .row-del-btn { background: none; border: none; cursor: pointer; font-size: 14px; padding: 2px 5px; transition: transform 0.2s; }
+        .row-del-btn:hover { transform: scale(1.2); }
+        
+        .copy-btn { width: 100%; padding: 16px; background: #2c3e50; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; margin: 20px 0; cursor: pointer; }
+        #dataActions button { background: #fadbd8; border: 1px solid #e74c3c; padding: 10px; width: 100%; border-radius: 8px; color: #c0392b; font-weight: bold; cursor: pointer; }
+        .footer-text { text-align: center; margin-top: 20px; font-weight: bold; font-size: 14px; border-top: 1px solid #ddd; padding-top: 10px; }
+    </style>
+</head>
+<body>
+
+<!-- লগইন ওভারলে স্ক্রিন -->
+<div id="loginOverlay" style="display:none;">
+    <div class="login-box">
+        <div class="profile-area">
+            <img src="photo1.jpg" alt="Profile" class="profile-img">
+            <h2 class="profile-name">Palash Mahmod</h2>
+        </div>
+        <hr class="divider">
+        <div class="app-title">GPA Calculator (9th-10th)</div>
+        
+        <input type="text" id="loginId" placeholder="আইডি নম্বর দিন">
+        <input type="password" id="loginPin" placeholder="পিন নম্বর দিন">
+        <button id="loginBtn">প্রবেশ করুন</button>
+    </div>
+</div>
+
+<div class="container">
+    <!-- ডাইনামিক শিক্ষক ও ক্লাস ইনফো বার -->
+    <div id="teacherInfoBar" class="teacher-info-bar" style="display: none;">
+        <div class="profile-area">
+            <img src="photo1.jpg" alt="Profile" class="profile-img">
+            <h2 class="profile-name">Palash Mahmod</h2>
+        </div>
+        শিক্ষক: <span id="infoName">-</span> | শ্রেণি: <span id="infoClass">-</span> | শাখা/বিভাগ: <span id="infoSection">-</span> | সাল: <span id="infoYear">-</span>
+        <br>
+        <button class="logout-btn" id="logoutBtn">লগআউট করুন</button>
+    </div>
+
+    <!-- হেডার টাইটেল -->
+    <div class="header">
+        <h1>GPA Calculation (9th-10th)</h1>
+    </div>
+
+    <div id="inputSection">
+        <div class="main-inputs">
+            <input type="text" id="currentRoll" placeholder="রোল নং" inputmode="decimal">
+            <input type="text" id="studentName" placeholder="শিক্ষার্থীদের নাম">
+        </div>
+
+        <table class="subject-table">
+            <thead>
+                <tr>
+                    <th>বিষয়</th>
+                    <th>প্রাপ্ত নম্বর</th>
+                    <th>GP</th>
+                    <th>Grade</th>
+                </tr>
+            </thead>
+            <tbody id="subjectInputs"></tbody>
+        </table>
+
+        <div id="quickSummary" class="summary-box">
+            মোট নম্বর: <span id="q-total">-</span> | GPA: <span id="q-gpa">-</span> | ফলাফল: <span id="q-grade">-</span>
+        </div>
+
+        <div class="button-group">
+            <button id="calcBtn">ফলাফল দেখুন</button>
+            <button id="saveBtn" disabled>সংরক্ষণ করুন</button>
+        </div>
+    </div>
+
+    <div class="report-section">
+        <h3 style="text-align: center;">সংরক্ষিত মেধাতালিকা</h3>
+        <div style="overflow-x: auto;">
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th>নতুন রোল</th>
+                        <th>নাম</th>
+                        <th>পূর্ব রোল</th>
+                        <th>নম্বর</th>
+                        <th>GPA</th>
+                        <th>মেধা</th>
+                        <th>উপবৃত্তি</th>
+                        <th>❌</th>
+                    </tr>
+                </thead>
+                <tbody id="reportTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <button class="copy-btn" id="copyBtn">📋 মেধাতালিকা কপি করুন (Sheet1 এর জন্য)</button>
+    <div id="dataActions"><button id="clearBtn">⚠️ সকল তথ্য মুছে ফেলুন</button></div>
+    <div class="footer-text">POWERED BY PALASH MAHMOD</div>
+</div>
+
+<!-- Firebase Realtime Logic Integration -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+    import { getDatabase, ref, get, child, onValue } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyA_NQ7MQTKkQbvVXGAxUAAL9O50Z7OVOvw",
+        authDomain: "gpa-calculation-710dc.firebaseapp.com",
+        projectId: "gpa-calculation-710dc",
+        storageBucket: "gpa-calculation-710dc.firebasestorage.app",
+        messagingSenderId: "1092344384301",
+        appId: "1:1092344384301:web:77350bd13958c125ac61a4",
+        measurementId: "G-19E7DVEF4M"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    let currentUserId = localStorage.getItem('class9_logged_id') || null;
+    let DATA_KEY = currentUserId ? `class9_v20_data_${currentUserId}` : 'class9_v20_data';
+    const SUB_KEY = 'class9_v20_subs';
+
+    let subjects = [
+        { id: 'bn1', name: 'বাংলা ১ম', pair: 'bn' }, { id: 'bn2', name: 'বাংলা ২য়', pair: 'bn' },
+        { id: 'en1', name: 'ইংরেজি ১ম', pair: 'en' }, { id: 'en2', name: 'ইংরেজি ২য়', pair: 'en' },
+        { id: 'math', name: 'গণিত' }, { id: 'reli', name: 'ধর্ম' },
+        { id: 'sc', name: 'বিজ্ঞান/বিঃ ও বিঃ' }, { id: 'g1', name: 'গ্রুপ-১' },
+        { id: 'g2', name: 'গ্রুপ-২' }, { id: 'g3', name: 'গ্রুপ-৩' },
+        { id: 'opt', name: 'ঐচ্ছিক', isOptional: true }, { id: 'ict', name: 'তথ্য' }
+    ];
+
+    let allResults = [];
+    let currentCalc = null;
+    let dbListenerRef = null;
+
+    function init() {
+        if (!currentUserId) {
+            document.getElementById('loginOverlay').style.display = 'flex';
+            document.getElementById('teacherInfoBar').style.display = 'none';
+        } else {
+            document.getElementById('loginOverlay').style.display = 'none';
+            const userRef = ref(db, 'users/' + currentUserId);
+            
+            dbListenerRef = onValue(userRef, (snapshot) => {
+                if (!snapshot.exists()) {
+                    alert("আপনার আইডিটি অ্যাডমিন দ্বারা নিষ্ক্রিয় বা মুছে ফেলা হয়েছে!");
+                    forceLogout();
+                } else {
+                    const userData = snapshot.val();
+                    document.getElementById('infoName').innerText = userData.teacherName || '---';
+                    document.getElementById('infoClass').innerText = userData.className || '---';
+                    document.getElementById('infoSection').innerText = userData.sectionName || '---';
+                    document.getElementById('infoYear').innerText = userData.year || '---';
+                    document.getElementById('teacherInfoBar').style.display = 'block';
+                }
+            });
+
+            const savedSubs = localStorage.getItem(SUB_KEY);
+            if (savedSubs) subjects = JSON.parse(savedSubs);
+
+            const savedData = localStorage.getItem(DATA_KEY);
+            if (savedData) allResults = JSON.parse(savedData);
+
+            renderInputs();
+            updateReport();
+        }
+    }
+
+    async function checkLogin() {
+        const id = document.getElementById('loginId').value.trim();
+        const pin = document.getElementById('loginPin').value.trim();
+        
+        if(!id || !pin) {
+            alert("আইডি এবং পিন নম্বর দুটিই সঠিকভাবে দিন!");
+            return;
+        }
+
+        const dbRef = ref(db);
+        try {
+            const snapshot = await get(child(dbRef, `users/${id}`));
+            if (snapshot.exists()) {
+                const userData = snapshot.val();
+                if (userData.pin === pin) {
+                    localStorage.setItem('class9_logged_id', id);
+                    currentUserId = id;
+                    DATA_KEY = `class9_v20_data_${id}`;
+                    alert("লগইন সফল হয়েছে!");
+                    location.reload();
+                } else {
+                    alert("ভুল পিন নম্বর!");
+                }
+            } else {
+                alert("এই আইডি নম্বরটি নিবন্ধিত নয়!");
+            }
+        } catch (error) {
+            alert("সার্ভার ত্রুটি! ইন্টারনেট সংযোগ চেক করুন।");
+        }
+    }
+
+    function handleLogout() {
+        const pass = prompt("লগআউট করতে সিকিউরিটি পাসওয়ার্ড দিন:");
+        if (pass === 'pm5522') {
+            forceLogout();
+        } else if (pass !== null) {
+            alert("ভুল পাসওয়ার্ড!");
+        }
+    }
+
+    function forceLogout() {
+        localStorage.removeItem('class9_logged_id');
+        location.reload();
+    }
+
+    function toBengali(num, forceText = false) {
+        if (num === null || num === undefined) return "";
+        let n = num.toString();
+        const bDigits = {'0':'০','1':'১','2':'২','3':'৩','4':'৪','5':'৫','6':'৬','7':'৭','8':'৮','9':'৯','.' : '.'};
+        let result = n.split('').map(d => bDigits[d] || d).join('');
+        return forceText ? "\u200C" + result : result;
+    }
+
+    function renderInputs() {
+        let html = '';
+        for (let i = 0; i < subjects.length; i++) {
+            let sub = subjects[i];
+            let next = subjects[i+1];
+            
+            if (sub.pair && next && sub.pair === next.pair) {
+                html += `<tr>
+                    <td>${sub.name} <span class="edit-btn" data-idx="${i}">✎</span></td>
+                    <td><input type="text" inputmode="decimal" class="mark-input nav-input" id="mark-${sub.id}"></td>
+                    <td rowspan="2" id="gp-pair-${sub.pair}">-</td>
+                    <td rowspan="2" id="gr-pair-${sub.pair}">-</td>
+                </tr>
+                <tr>
+                    <td>${next.name} <span class="edit-btn" data-idx="${i+1}">✎</span></td>
+                    <td><input type="text" inputmode="decimal" class="mark-input nav-input" id="mark-${next.id}"></td>
+                </tr>`;
+                i++;
+            } else {
+                html += `<tr>
+                    <td>${sub.name} <span class="edit-btn" data-idx="${i}">✎</span></td>
+                    <td><input type="text" inputmode="decimal" class="mark-input nav-input" id="mark-${sub.id}"></td>
+                    <td id="gp-${sub.id}">-</td>
+                    <td id="gr-${sub.id}">-</td>
+                </tr>`;
+            }
+        }
+        document.getElementById('subjectInputs').innerHTML = html;
+
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+            btn.onclick = function() { editSub(this.getAttribute('data-idx')); };
+        });
+
+        setupNav();
+    }
+
+    function editSub(idx) {
+        let n = prompt("নাম:", subjects[idx].name);
+        if (n) { 
+            subjects[idx].name = n; 
+            localStorage.setItem(SUB_KEY, JSON.stringify(subjects)); 
+            renderInputs(); 
+        }
+    }
+
+    function setupNav() {
+        const inputs = document.querySelectorAll('.mark-input, #currentRoll, #studentName');
+        inputs.forEach((inp, idx) => {
+            inp.onkeydown = function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (inputs[idx+1]) inputs[idx+1].focus();
+                    else calculateSSC();
+                }
+            };
+        });
+    }
+
+    function getGrade(m, failManual) {
+        if (failManual || m < 33) return { gp: 0.0, gr: 'F' };
+        if (m >= 80) return { gp: 5.0, gr: 'A+' };
+        if (m >= 70) return { gp: 4.0, gr: 'A' };
+        if (m >= 60) return { gp: 3.5, gr: 'A-' };
+        if (m >= 50) return { gp: 3.0, gr: 'B' };
+        if (m >= 40) return { gp: 2.0, gr: 'C' };
+        if (m >= 33) return { gp: 1.0, gr: 'D' };
+        return { gp: 0.0, gr: 'F' };
+    }
+
+    function calculateSSC() {
+        let totalMarks = 0, totalGP = 0, failCount = 0;
+        let pMarks = { bn: 0, en: 0 }, pFail = { bn: false, en: false };
+
+        subjects.forEach(s => {
+            let val = document.getElementById(`mark-${s.id}`).value;
+            let isManualFail = val.includes('-');
+            let m = Math.abs(parseFloat(val)) || 0;
+
+            // মোট নম্বরে সর্বদা প্রকৃত প্রাপ্ত নম্বরটি যুক্ত হবে
+            totalMarks += m;
+
+            if (s.pair) {
+                pMarks[s.pair] += m;
+                if (isManualFail || m < 33) pFail[s.pair] = true;
+            } else {
+                // তথ্য বিষয়ের জন্য গ্রেড কাউন্ট করার সময় নম্বরকে ২ গুণ করা হবে
+                let gradeCalculationMark = (s.id === 'ict') ? (m * 2) : m;
+                let res = getGrade(gradeCalculationMark, isManualFail);
+
+                document.getElementById(`gp-${s.id}`).innerText = res.gp.toFixed(1);
+                document.getElementById(`gr-${s.id}`).innerText = res.gr;
+
+                if (!s.isOptional) {
+                    if (res.gp === 0) failCount++;
+                    totalGP += res.gp;
+                } else {
+                    totalGP += Math.max(0, res.gp - 2); 
+                }
+            }
+        });
+
+        ['bn', 'en'].forEach(p => {
+            let avgMark = pMarks[p] / 2;
+            let res = getGrade(avgMark, pFail[p]);
+            document.getElementById(`gp-pair-${p}`).innerText = res.gp.toFixed(1);
+            document.getElementById(`gr-pair-${p}`).innerText = res.gr;
+
+            if (res.gp === 0) failCount++;
+            totalGP += res.gp;
+        });
+
+        let avgGPA = (failCount > 0) ? 0 : Math.min(5, totalGP / 9); 
+        let gpaShow = (failCount > 0) ? "F" + failCount : toBengali(avgGPA.toFixed(2));
+
+        document.getElementById('q-total').innerText = toBengali(totalMarks);
+        document.getElementById('q-gpa').innerText = gpaShow;
+        document.getElementById('q-grade').innerText = (failCount > 0) ? "অকৃতকার্য (F" + failCount + ")" : "কৃতকার্য";
+        document.getElementById('quickSummary').style.display = 'block';
+
+        currentCalc = { 
+            roll: document.getElementById('currentRoll').value,
+            name: document.getElementById('studentName').value,
+            marks: totalMarks, gpa: avgGPA, fail: failCount, stipend: ''
+        };
+        document.getElementById('saveBtn').disabled = false;
+    }
+
+    function saveResult() {
+        if (!currentCalc.roll) return alert("রোল দিন");
+        const idx = allResults.findIndex(r => r.roll === currentCalc.roll);
+        if (idx > -1) allResults[idx] = currentCalc; else allResults.push(currentCalc);
+
+        localStorage.setItem(DATA_KEY, JSON.stringify(allResults));
+        document.getElementById('saveBtn').disabled = true;
+        updateReport();
+
+        document.querySelectorAll('.mark-input').forEach(i => i.value = '');
+        document.getElementById('currentRoll').value = '';
+        document.getElementById('studentName').value = '';
+        document.getElementById('currentRoll').focus();
+        document.getElementById('quickSummary').style.display = 'none';
+    }
+
+    function updateReport() {
+        allResults.sort((a, b) => (a.fail !== b.fail) ? a.fail - b.fail : (b.gpa !== a.gpa) ? b.gpa - a.gpa : b.marks - a.marks);
+        let html = '';
+        allResults.forEach((r, i) => {
+            let gpaVal = (r.fail > 0) ? "F" + r.fail : toBengali(r.gpa.toFixed(2));
+            html += `<tr>
+                <td>${toBengali(i+1)}</td>
+                <td>${r.name || '---'}</td>
+                <td>${toBengali(r.roll)}</td>
+                <td>${toBengali(r.marks)}</td>
+                <td>${gpaVal}</td>
+                <td>${getMeritText(i+1)}</td>
+                <td><input type="text" class="st-input" value="${r.stipend || ''}" id="stipend-${i}"></td>
+                <td><button class="row-del-btn" data-idx="${i}">❌</button></td>
+            </tr>`;
+        });
+        document.getElementById('reportTableBody').innerHTML = html;
+
+        allResults.forEach((r, i) => {
+            const stEl = document.getElementById(`stipend-${i}`);
+            if(stEl) {
+                stEl.onchange = function() { updateStipend(i, this.value); };
+            }
+        });
+
+        document.querySelectorAll('.row-del-btn').forEach(btn => {
+            btn.onclick = function() {
+                const idx = parseInt(this.getAttribute('data-idx'));
+                deleteStudent(idx);
+            };
+        });
+    }
+
+    function deleteStudent(idx) {
+        const student = allResults[idx];
+        const studentIdentifier = student.name ? `"${student.name}"` : `রোল নম্বর ${student.roll}`;
+        
+        if (confirm(`আপনি কি নিশ্চিতভাবে ${studentIdentifier}-এর তথ্য মেধাতালিকা থেকে মুছে ফেলতে চান?`)) {
+            allResults.splice(idx, 1);
+            localStorage.setItem(DATA_KEY, JSON.stringify(allResults));
+            updateReport();
+        }
+    }
+
+    function getMeritText(pos) {
+        const list = ["","১ম","২য়","৩য়","৪র্থ","৫ম","৬ষ্ঠ","৭ম","৮ম","৯ম","১০ম"];
+        return list[pos] || toBengali(pos) + "তম";
+    }
+
+    function updateStipend(idx, val) {
+        allResults[idx].stipend = val;
+        localStorage.setItem(DATA_KEY, JSON.stringify(allResults));
+    }
+
+    function copyTableOnly() {
+        if (allResults.length === 0) return alert("তথ্য নেই!");
+        let rows = "নতুন রোল\tশিক্ষার্থীদের নাম\tপূর্বের রোল\tমোট নম্বর\tGPA\tমেধাস্থান\tউপবৃত্তি\n";
+        allResults.forEach((r, i) => {
+            let gpaVal = (r.fail > 0) ? "F" + r.fail : toBengali(r.gpa.toFixed(2), true);
+            rows += `${toBengali(i+1, true)}\t${r.name || ''}\t${toBengali(r.roll, true)}\t${toBengali(r.marks, true)}\t${gpaVal}\t${getMeritText(i+1)}\t${r.stipend || ''}\n`;
+        });
+
+        const el = document.createElement('textarea');
+        el.value = rows;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+        alert("মেধাতালিকা সফলভাবে কপি হয়েছে!");
+    }
+
+    function clearAllData() { 
+        if(confirm("সব তথ্য মুছে ফেলবেন?")) { 
+            allResults = []; 
+            localStorage.removeItem(DATA_KEY); 
+            updateReport(); 
+        } 
+    }
+
+    document.getElementById('loginBtn').onclick = checkLogin;
+    document.getElementById('logoutBtn').onclick = handleLogout;
+    document.getElementById('calcBtn').onclick = calculateSSC;
+    document.getElementById('saveBtn').onclick = saveResult;
+    document.getElementById('copyBtn').onclick = copyTableOnly;
+    document.getElementById('clearBtn').onclick = clearAllData;
+
+    window.onload = init;
+</script>
+</body>
+</html>
