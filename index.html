@@ -53,7 +53,6 @@
         .report-table th, .report-table td { border: 1px solid #333; padding: 8px 4px; text-align: center; font-size: 13px; font-weight: bold; }
         .st-input { width: 100%; border: none; background: transparent; text-align: center; font-weight: bold; }
         
-        /* একক ডিলিট বাটনের স্টাইল */
         .row-del-btn { background: #e74c3c; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; }
         .row-del-btn:hover { background: #c0392b; }
         
@@ -154,7 +153,7 @@
 <!-- Firebase Realtime Logic Integration -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
-    import { getDatabase, ref, get, child, onValue } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
+    import { getDatabase, ref, get, child, onValue, set, remove } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyA_NQ7MQTKkQbvVXGAxUAAL9O50Z7OVOvw",
@@ -170,21 +169,19 @@
     const db = getDatabase(app);
 
     let currentUserId = localStorage.getItem('class9_logged_id') || null;
-    let DATA_KEY = currentUserId ? `class9_v20_data_${currentUserId}` : 'class9_v20_data';
     const SUB_KEY = 'class9_v20_subs';
-
+    
     let subjects = [
         { id: 'bn1', name: 'বাংলা ১ম', pair: 'bn' }, { id: 'bn2', name: 'বাংলা ২য়', pair: 'bn' },
         { id: 'en1', name: 'ইংরেজি ১ম', pair: 'en' }, { id: 'en2', name: 'ইংরেজি ২য়', pair: 'en' },
         { id: 'math', name: 'গণিত' }, { id: 'reli', name: 'ধর্ম' },
-        { id: 'sc', name: 'বিজ্ঞান/বিঃ ও বিঃ' }, { id: 'g1', name: 'গ্রুপ-১' },
+        { id: 'sc', name: 'বিজ্ঞান/বিঃ ও বিঃ' }, { id: 'g1', name: 'груп-১' },
         { id: 'g2', name: 'গ্রুপ-২' }, { id: 'g3', name: 'গ্রুপ-৩' },
         { id: 'opt', name: 'ঐচ্ছিক', isOptional: true }, { id: 'ict', name: 'তথ্য' }
     ];
-
+    
     let allResults = [];
     let currentCalc = null;
-    let dbListenerRef = null;
 
     function init() {
         if (!currentUserId) {
@@ -194,9 +191,9 @@
             document.getElementById('loginOverlay').style.display = 'none';
             const userRef = ref(db, 'users/' + currentUserId);
             
-            dbListenerRef = onValue(userRef, (snapshot) => {
+            onValue(userRef, (snapshot) => {
                 if (!snapshot.exists()) {
-                    alert("আপনার আইডিটি অ্যাডমিন দ্বারা নিষ্ক্রিয় বা মুছে ফেলা হয়েছে!");
+                    alert("আপনার আইডিটি ফায়ারবেস থেকে মুছে ফেলা হয়েছে বা নিষ্ক্রিয় করা হয়েছে!");
                     forceLogout();
                 } else {
                     const userData = snapshot.val();
@@ -205,17 +202,19 @@
                     document.getElementById('infoSection').innerText = userData.sectionName || '---';
                     document.getElementById('infoYear').innerText = userData.year || '---';
                     document.getElementById('teacherInfoBar').style.display = 'block';
+
+                    if (userData.results) {
+                        allResults = Object.keys(userData.results).map(key => userData.results[key]);
+                    } else {
+                        allResults = [];
+                    }
+                    updateReport();
                 }
             });
 
             const savedSubs = localStorage.getItem(SUB_KEY);
             if (savedSubs) subjects = JSON.parse(savedSubs);
-
-            const savedData = localStorage.getItem(DATA_KEY);
-            if (savedData) allResults = JSON.parse(savedData);
-
             renderInputs();
-            updateReport();
         }
     }
 
@@ -227,7 +226,6 @@
             alert("আইডি এবং পিন নম্বর দুটিই সঠিকভাবে দিন!");
             return;
         }
-
         const dbRef = ref(db);
         try {
             const snapshot = await get(child(dbRef, `users/${id}`));
@@ -236,7 +234,6 @@
                 if (userData.pin === pin) {
                     localStorage.setItem('class9_logged_id', id);
                     currentUserId = id;
-                    DATA_KEY = `class9_v20_data_${id}`;
                     alert("লগইন সফল হয়েছে!");
                     location.reload();
                 } else {
@@ -300,11 +297,9 @@
             }
         }
         document.getElementById('subjectInputs').innerHTML = html;
-
         document.querySelectorAll('.edit-btn').forEach(btn => {
             btn.onclick = function() { editSub(this.getAttribute('data-idx')); };
         });
-
         setupNav();
     }
 
@@ -344,26 +339,21 @@
     function calculateSSC() {
         let totalMarks = 0, totalGP = 0, failCount = 0;
         let pMarks = { bn: 0, en: 0 }, pFail = { bn: false, en: false };
-
+        
         subjects.forEach(s => {
             let val = document.getElementById(`mark-${s.id}`).value;
             let isManualFail = val.includes('-');
             let m = Math.abs(parseFloat(val)) || 0;
-
-            // মোট নম্বরে সর্বদা প্রকৃত প্রাপ্ত নম্বরটি যুক্ত হবে
+            
             totalMarks += m;
-
             if (s.pair) {
                 pMarks[s.pair] += m;
-                if (isManualFail || m < 33) pFail[s.pair] = true;
+                if (isManualFail) pFail[s.pair] = true;
             } else {
-                // তথ্য বিষয়ের জন্য গ্রেড কাউন্ট করার সময় নম্বরকে ২ গুণ করা হবে
                 let gradeCalculationMark = (s.id === 'ict') ? (m * 2) : m;
                 let res = getGrade(gradeCalculationMark, isManualFail);
-
                 document.getElementById(`gp-${s.id}`).innerText = res.gp.toFixed(1);
                 document.getElementById(`gr-${s.id}`).innerText = res.gr;
-
                 if (!s.isOptional) {
                     if (res.gp === 0) failCount++;
                     totalGP += res.gp;
@@ -375,25 +365,25 @@
 
         ['bn', 'en'].forEach(p => {
             let avgMark = pMarks[p] / 2;
-            let res = getGrade(avgMark, pFail[p]);
+            let isPairFailed = pFail[p] || (pMarks[p] < 66);
+            let res = getGrade(avgMark, isPairFailed);
             document.getElementById(`gp-pair-${p}`).innerText = res.gp.toFixed(1);
             document.getElementById(`gr-pair-${p}`).innerText = res.gr;
-
             if (res.gp === 0) failCount++;
             totalGP += res.gp;
         });
 
         let avgGPA = (failCount > 0) ? 0 : Math.min(5, totalGP / 9); 
         let gpaShow = (failCount > 0) ? "F" + failCount : toBengali(avgGPA.toFixed(2));
-
+        
         document.getElementById('q-total').innerText = toBengali(totalMarks);
         document.getElementById('q-gpa').innerText = gpaShow;
         document.getElementById('q-grade').innerText = (failCount > 0) ? "অকৃতকার্য (F" + failCount + ")" : "কৃতকার্য";
         document.getElementById('quickSummary').style.display = 'block';
-
+        
         currentCalc = { 
-            roll: document.getElementById('currentRoll').value,
-            name: document.getElementById('studentName').value,
+            roll: document.getElementById('currentRoll').value.trim(),
+            name: document.getElementById('studentName').value.trim(),
             marks: totalMarks, gpa: avgGPA, fail: failCount, stipend: ''
         };
         document.getElementById('saveBtn').disabled = false;
@@ -401,22 +391,24 @@
 
     function saveResult() {
         if (!currentCalc.roll) return alert("রোল দিন");
-        const idx = allResults.findIndex(r => r.roll === currentCalc.roll);
-        if (idx > -1) allResults[idx] = currentCalc; else allResults.push(currentCalc);
-
-        localStorage.setItem(DATA_KEY, JSON.stringify(allResults));
-        document.getElementById('saveBtn').disabled = true;
-        updateReport();
-
-        document.querySelectorAll('.mark-input').forEach(i => i.value = '');
-        document.getElementById('currentRoll').value = '';
-        document.getElementById('studentName').value = '';
-        document.getElementById('currentRoll').focus();
-        document.getElementById('quickSummary').style.display = 'none';
+        
+        const resultRef = ref(db, `users/${currentUserId}/results/${currentCalc.roll}`);
+        
+        set(resultRef, currentCalc).then(() => {
+            document.getElementById('saveBtn').disabled = true;
+            document.querySelectorAll('.mark-input').forEach(i => i.value = '');
+            document.getElementById('currentRoll').value = '';
+            document.getElementById('studentName').value = '';
+            document.getElementById('currentRoll').focus();
+            document.getElementById('quickSummary').style.display = 'none';
+        }).catch((error) => {
+            alert("ফলাফল সংরক্ষণে ব্যর্থ! ইন্টারনেট চেক করুন।");
+        });
     }
 
     function updateReport() {
         allResults.sort((a, b) => (a.fail !== b.fail) ? a.fail - b.fail : (b.gpa !== a.gpa) ? b.gpa - a.gpa : b.marks - a.marks);
+        
         let html = '';
         allResults.forEach((r, i) => {
             let gpaVal = (r.fail > 0) ? "F" + r.fail : toBengali(r.gpa.toFixed(2));
@@ -428,7 +420,7 @@
                 <td>${gpaVal}</td>
                 <td>${getMeritText(i+1)}</td>
                 <td><input type="text" class="st-input" value="${r.stipend || ''}" id="stipend-${i}"></td>
-                <td><button class="row-del-btn" data-idx="${i}">মুছে ফেলুন</button></td>
+                <td><button class="row-del-btn" data-roll="${r.roll}" data-name="${r.name}">মুছে ফেলুন</button></td>
             </tr>`;
         });
         document.getElementById('reportTableBody').innerHTML = html;
@@ -436,27 +428,22 @@
         allResults.forEach((r, i) => {
             const stEl = document.getElementById(`stipend-${i}`);
             if(stEl) {
-                stEl.onchange = function() { updateStipend(i, this.value); };
+                stEl.onchange = function() { updateStipend(r.roll, this.value); };
             }
         });
 
         document.querySelectorAll('.row-del-btn').forEach(btn => {
             btn.onclick = function() {
-                const idx = parseInt(this.getAttribute('data-idx'));
-                deleteStudent(idx);
+                const roll = this.getAttribute('data-roll');
+                const name = this.getAttribute('data-name');
+                const studentIdentifier = name ? `"${name}"` : `রোল নম্বর ${roll}`;
+                
+                if (confirm(`আপনি কি নিশ্চিতভাবে ${studentIdentifier}-এর তথ্য ডেটাবেজ থেকে মুছে ফেলতে চান?`)) {
+                    const singleRecordRef = ref(db, `users/${currentUserId}/results/${roll}`);
+                    remove(singleRecordRef).catch(() => alert("মুছতে ব্যর্থ হয়েছে।"));
+                }
             };
         });
-    }
-
-    function deleteStudent(idx) {
-        const student = allResults[idx];
-        const studentIdentifier = student.name ? `"${student.name}"` : `রোল নম্বর ${student.roll}`;
-        
-        if (confirm(`আপনি কি নিশ্চিতভাবে ${studentIdentifier}-এর তথ্য মেধাতালিকা থেকে মুছে ফেলতে চান?`)) {
-            allResults.splice(idx, 1);
-            localStorage.setItem(DATA_KEY, JSON.stringify(allResults));
-            updateReport();
-        }
     }
 
     function getMeritText(pos) {
@@ -464,19 +451,18 @@
         return list[pos] || toBengali(pos) + "তম";
     }
 
-    function updateStipend(idx, val) {
-        allResults[idx].stipend = val;
-        localStorage.setItem(DATA_KEY, JSON.stringify(allResults));
+    function updateStipend(roll, val) {
+        const stipendRef = ref(db, `users/${currentUserId}/results/${roll}/stipend`);
+        set(stipendRef, val);
     }
 
     function copyTableOnly() {
         if (allResults.length === 0) return alert("তথ্য নেই!");
-        let rows = "নতুন রোল\tশিক্ষার্থীদের নাম\tপূর্বের রোল\tমোট নম্বর\tGPA\tমেধাস্থান\tউপবৃত্তি\n";
+        let rows = "সিরিয়াল নং\tশিক্ষার্থীদের নাম\tরোল নম্বর\tমোট নম্বর\tGPA\tমেধাস্থান\tউপবৃত্তি\n";
         allResults.forEach((r, i) => {
             let gpaVal = (r.fail > 0) ? "F" + r.fail : toBengali(r.gpa.toFixed(2), true);
             rows += `${toBengali(i+1, true)}\t${r.name || ''}\t${toBengali(r.roll, true)}\t${toBengali(r.marks, true)}\t${gpaVal}\t${getMeritText(i+1)}\t${r.stipend || ''}\n`;
         });
-
         const el = document.createElement('textarea');
         el.value = rows;
         document.body.appendChild(el);
@@ -487,10 +473,12 @@
     }
 
     function clearAllData() { 
-        if(confirm("সব তথ্য মুছে ফেলবেন?")) { 
-            allResults = []; 
-            localStorage.removeItem(DATA_KEY); 
-            updateReport(); 
+        if(confirm("আপনি কি নিশ্চিতভাবে এই আইডির সমস্ত ফলাফল ফায়ারবেস থেকে মুছে ফেলবেন?")) { 
+            const allResultsRef = ref(db, `users/${currentUserId}/results`);
+            remove(allResultsRef).then(() => {
+                allResults = [];
+                updateReport();
+            }).catch(() => alert("তথ্য মুছতে সমস্যা হয়েছে।"));
         } 
     }
 
@@ -500,7 +488,6 @@
     document.getElementById('saveBtn').onclick = saveResult;
     document.getElementById('copyBtn').onclick = copyTableOnly;
     document.getElementById('clearBtn').onclick = clearAllData;
-
     window.onload = init;
 </script>
 </body>
