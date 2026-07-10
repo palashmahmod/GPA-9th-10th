@@ -54,8 +54,8 @@
         .st-input { width: 100%; border: none; background: transparent; text-align: center; font-weight: bold; }
         
         /* একক ডিলিট বাটনের স্টাইল */
-        .row-del-btn { background: none; border: none; cursor: pointer; font-size: 14px; padding: 2px 5px; transition: transform 0.2s; }
-        .row-del-btn:hover { transform: scale(1.2); }
+        .row-del-btn { background: #e74c3c; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; }
+        .row-del-btn:hover { background: #c0392b; }
         
         .copy-btn { width: 100%; padding: 16px; background: #2c3e50; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; margin: 20px 0; cursor: pointer; }
         #dataActions button { background: #fadbd8; border: 1px solid #e74c3c; padding: 10px; width: 100%; border-radius: 8px; color: #c0392b; font-weight: bold; cursor: pointer; }
@@ -138,7 +138,7 @@
                         <th>GPA</th>
                         <th>মেধা</th>
                         <th>উপবৃত্তি</th>
-                        <th>❌</th>
+                        <th>অ্যাকশন</th>
                     </tr>
                 </thead>
                 <tbody id="reportTableBody"></tbody>
@@ -428,7 +428,7 @@
                 <td>${gpaVal}</td>
                 <td>${getMeritText(i+1)}</td>
                 <td><input type="text" class="st-input" value="${r.stipend || ''}" id="stipend-${i}"></td>
-                <td><button class="row-del-btn" data-idx="${i}">❌</button></td>
+                <td><button class="row-del-btn" data-idx="${i}">মুছে ফেলুন</button></td>
             </tr>`;
         });
         document.getElementById('reportTableBody').innerHTML = html;
