@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>শিক্ষার্থীদের নাম এন্ট্রি প্যানেল (৯ম-১০ম)</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); min-height: 100vh; padding: 15px; margin: 0; color: #333; }
+        .container { width: 100%; max-width: 600px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
+        
+        /* ১ম লাইন: অ্যাকশন বাটনসমূহ */
+        .top-actions { display: flex; gap: 10px; margin-bottom: 15px; }
+        .top-actions button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; font-size: 14px; transition: all 0.3s; }
+        .btn-back { background-color: #34495e; }
+        .btn-save { background-color: #27ae60; }
+        .btn-clear { background-color: #e74c3c; }
+        .top-actions button:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        /* ২য় লাইন: কপি-পেস্ট বাটন */
+        .utility-actions { display: flex; gap: 10px; margin-bottom: 20px; }
+        .utility-actions button { flex: 1; padding: 12px; border: 2px dashed #3498db; background: #ebf5fb; color: #2980b9; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .utility-actions button:hover { background: #d4e6f1; }
+
+        /* ৩য় ও ৪র্থ লাইন: আকর্ষণীয় হেডার */
+        .title-section { text-align: center; margin: 20px 0; }
+        .main-title { font-size: 26px; color: #2c3e50; margin: 0; font-weight: 800; letter-spacing: 1px; background: linear-gradient(45deg, #2c3e50, #3498db); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .sub-title { font-size: 16px; color: #7f8c8d; margin: 5px 0 0 0; font-weight: bold; }
+
+        /* ৬ষ্ঠ লাইন: কালো রঙের ডিভাইডার */
+        .divider { height: 3px; background: #2c3e50; margin: 15px 0; border: none; border-radius: 2px; }
+
+        /* ৭ম লাইন: রোল নির্ধারণকারী ইনপুট ও OK বাটন */
+        .roll-config { display: flex; align-items: center; justify-content: center; gap: 10px; background: #f8f9fa; padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
+        .roll-config label { font-weight: bold; color: #4a5568; }
+        .roll-config input { width: 90px; padding: 8px; border: 2px solid #cbd5e0; border-radius: 6px; text-align: center; font-size: 16px; font-weight: bold; color: #2d3748; }
+        .btn-ok { background-color: #e67e22; color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: background 0.2s; font-size: 14px; }
+        .btn-ok:hover { background-color: #d35400; }
+
+        /* পেস্ট এরিয়া বক্স */
+        #pasteAreaWrapper { display: none; margin-bottom: 15px; background: #fdfefe; border: 1px solid #3498db; padding: 15px; border-radius: 10px; }
+        #pasteAreaWrapper textarea { width: 100%; height: 120px; padding: 10px; border: 1px solid #ccc; border-radius: 6px; resize: vertical; font-size: 14px; margin-bottom: 10px; line-height: 1.5; }
+        #pasteAreaWrapper button { background: #3498db; color: white; border: none; padding: 8px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+
+        /* টেবিল ডিজাইন */
+        .table-container { max-height: 400px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 20px; }
+        .entry-table { width: 100%; border-collapse: collapse; background: white; }
+        .entry-table th, .entry-table td { border: 1px solid #e2e8f0; padding: 10px; text-align: center; }
+        .entry-table th { background: #f7fafc; color: #4a5568; font-weight: bold; position: sticky; top: 0; }
+        .roll-cell { font-weight: bold; color: #2b6cb0; width: 25%; }
+        .name-input { width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 5px; font-size: 15px; font-weight: 500; }
+        .name-input:focus { border-color: #3182ce; outline: none; background: #ebf8ff; }
+
+        /* ১১তম লাইন: ফুটার */
+        .footer-text { text-align: center; font-weight: bold; font-size: 13px; color: #718096; border-top: 1px solid #e2e8f0; padding-top: 15px; margin-top: 20px; letter-spacing: 1px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- ১ম লাইন: অ্যাকশন বাটনসমূহ -->
+    <div class="top-actions">
+        <button class="btn-back" id="backBtn">⬅ ফিরে যান</button>
+        <button class="btn-save" id="saveBtn">💾 সেইভ করুন</button>
+        <button class="btn-clear" id="clearBtn">🗑 মুছে ফেলুন</button>
+    </div>
+
+    <!-- ২য় লাইন: কপি ও পেস্ট বাটন -->
+    <div class="utility-actions">
+        <button id="pasteBtn">📋 নাম পেস্ট করুন</button>
+        <button id="copyBtn">✨ সকল নাম কপি করুন</button>
+    </div>
+
+    <!-- পেস্ট করার সুপ্ত বক্স -->
+    <div id="pasteAreaWrapper">
+        <textarea id="bulkText" placeholder="এখানে প্রতি লাইনে একটি করে নাম নিচে নিচে লিখুন বা পেস্ট করুন।&#10;যেমন:&#10;আদিবা জাহান রিয়া&#10;খাদিজাতুল কোবরা"></textarea>
+        <div style="text-align: right;"><button id="processPasteBtn">যুক্ত করুন</button></div>
+    </div>
+
+    <!-- ৩য় ও ৪র্থ লাইন: হেডার টাইটেল -->
+    <div class="title-section">
+        <div class="main-title">শিক্ষার্থীদের নাম এন্ট্রি</div>
+        <div class="sub-title">৯ম থেকে ১০ম</div>
+    </div>
+
+    <!-- ৬ষ্ঠ লাইন: কালো ডিভাইডার -->
+    <hr class="divider">
+
+    <!-- ৭ম লাইন: রোল সংখ্যা নির্ধারণ এবং ওকে বাটন -->
+    <div class="roll-config">
+        <label for="totalRolls">মোট শিক্ষার্থী সংখ্যা:</label>
+        <input type="number" id="totalRolls" min="0" max="200" value="0">
+        <button class="btn-ok" id="okBtn">ঠিক আছে</button>
+    </div>
+
+    <!-- টেবিল এরিয়া -->
+    <div class="table-container">
+        <table class="entry-table">
+            <thead>
+                <tr>
+                    <th>রোল নং</th>
+                    <th>শিক্ষার্থীর নাম</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <!-- ডাইনামিক সারি এখানে তৈরি হবে -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ১১তম লাইন: ফুটার -->
+    <div class="footer-text">POWERED BY PALASH MAHMOD</div>
+</div>
+
+<!-- Firebase Logic -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+    import { getDatabase, ref, get, set, remove } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
+
+    // আপনার ফায়ারবেস কনফিগারেশন
+    const firebaseConfig = {
+        apiKey: "AIzaSyA_NQ7MQTKkQbvVXGAxUAAL9O50Z7OVOvw",
+        authDomain: "gpa-calculation-710dc.firebaseapp.com",
+        projectId: "gpa-calculation-710dc",
+        storageBucket: "gpa-calculation-710dc.firebasestorage.app",
+        messagingSenderId: "1092344384301",
+        appId: "1:1092344384301:web:77350bd13958c125ac61a4",
+        measurementId: "G-19E7DVEF4M"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const currentUserId = localStorage.getItem('class9_logged_id');
+
+    // লগইন ভ্যালিডেশন
+    if (!currentUserId) {
+        alert("দয়া করে প্রথমে মূল পেজ থেকে লগইন করুন!");
+        location.href = "index.html";
+    }
+
+    const totalRollsInput = document.getElementById('totalRolls');
+    const tableBody = document.getElementById('tableBody');
+
+    // বাংলা সংখ্যা কনভার্টার
+    function toBengali(num) {
+        const bDigits = {'0':'০','1':'১','2':'২','3':'৩','4':'৪','5':'৫','6':'৬','7':'৭','8':'৮','9':'৯'};
+        return num.toString().split('').map(d => bDigits[d] || d).join('');
+    }
+
+    // টেবিল জেনারেট করার ফাংশন
+    function generateTable(count) {
+        if(count > 200) count = 200;
+        const currentRows = tableBody.querySelectorAll('tr').length;
+        
+        if (count > currentRows) {
+            for (let i = currentRows + 1; i <= count; i++) {
+                const tr = document.createElement('tr');
+                tr.setAttribute('data-roll', i);
+                tr.innerHTML = `
+                    <td class="roll-cell">${toBengali(i)}</td>
+                    <td><input type="text" class="name-input" id="name-${i}" placeholder="-"></td>
+                `;
+                tableBody.appendChild(tr);
+            }
+        } else if (count < currentRows) {
+            for (let i = currentRows; i > count; i--) {
+                const row = tableBody.querySelector(`tr[data-roll="${i}"]`);
+                if (row) row.remove();
+            }
+        }
+    }
+
+    // পরিবর্তন: সরাসরি অন-ইনপুটে টেবিল বদলাবে না, সর্বোচ্চ ২০০ লক করবে শুধু
+    totalRollsInput.oninput = function() {
+        let val = parseInt(this.value) || 0;
+        if(val > 200) { this.value = 200; }
+        if(val < 0) { this.value = 0; }
+    };
+
+    // পরিবর্তন: "ঠিক আছে" (OK) বাটনে ক্লিক করলে তবেই টেবিল ছোট বা বড় হবে
+    document.getElementById('okBtn').onclick = function() {
+        let val = parseInt(totalRollsInput.value) || 0;
+        const currentRows = tableBody.querySelectorAll('tr').length;
+        
+        if (val < currentRows) {
+            if(confirm(`আপনি শিক্ষার্থীর সংখ্যা কমিয়ে ${toBengali(val)} করছেন। এর ফলে অতিরিক্ত ${toBengali(currentRows - val)} টি রোলের ডাটা সাময়িকভাবে টেবিল থেকে মুছে যাবে। আপনি কি নিশ্চিত?`)) {
+                generateTable(val);
+            }
+        } else {
+            generateTable(val);
+        }
+    };
+
+    // ফায়ারবেস থেকে ডেটা লোড করা
+    function loadExistingData() {
+        const configRef = ref(db, `users/${currentUserId}/config`);
+        get(configRef).then((snapshot) => {
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                const rolls = Object.keys(data).map(Number);
+                const maxRoll = Math.max(...rolls, 0);
+                
+                totalRollsInput.value = maxRoll;
+                generateTable(maxRoll);
+                for (let roll in data) {
+                    const input = document.getElementById(`name-${roll}`);
+                    if (input) input.value = data[roll];
+                }
+            }
+        });
+    }
+
+    // ফিরে যান বাটন
+    document.getElementById('backBtn').onclick = () => {
+        location.href = "index.html";
+    };
+
+    // সেইভ বাটন
+    document.getElementById('saveBtn').onclick = () => {
+        if(confirm("আপনি কি নিশ্চিতভাবে এই নামগুলো সংরক্ষণ করতে চান? এটি পূর্বের তালিকা আপডেট করবে।")) {
+            const total = tableBody.querySelectorAll('tr').length;
+            const configData = {};
+            
+            for(let i = 1; i <= total; i++) {
+                const nameVal = document.getElementById(`name-${i}`).value.trim();
+                if(nameVal) {
+                    configData[i] = nameVal;
+                }
+            }
+            set(ref(db, `users/${currentUserId}/config`), configData).then(() => {
+                alert("সকল নাম সফলভাবে ফায়ারবেসে সংরক্ষিত হয়েছে!");
+            }).catch(() => alert("সংরক্ষণ করতে ব্যর্থ! ইন্টারনেট চেক করুন।"));
+        }
+    };
+
+    // মুছে ফেলার বাটন
+    document.getElementById('clearBtn').onclick = () => {
+        if(confirm("সাবধান! আপনি কি নিশ্চিতভাবে ফায়ারবেস এবং টেবিল থেকে সকল শিক্ষার্থীর নাম মুছে ফেলতে চান?")) {
+            remove(ref(db, `users/${currentUserId}/config`)).then(() => {
+                totalRollsInput.value = 0;
+                tableBody.innerHTML = '';
+                alert("সব তথ্য সফলভাবে মুছে ফেলা হয়েছে।");
+            }).catch(() => alert("মুছতে সমস্যা হয়েছে।"));
+        }
+    };
+
+    // পেস্ট প্যানেল টগল
+    document.getElementById('pasteBtn').onclick = () => {
+        const wrapper = document.getElementById('pasteAreaWrapper');
+        wrapper.style.display = wrapper.style.display === 'block' ? 'none' : 'block';
+    };
+
+    // পরিবর্তন: কমার বদলে এখন লাইন ব্রেক বা নিচে নিচে দেওয়া নাম প্রোসেস করবে 
+    document.getElementById('processPasteBtn').onclick = () => {
+        const text = document.getElementById('bulkText').value;
+        if(!text.trim()) return alert("দয়া করে কিছু নাম লিখুন!");
+        
+        // '\n' দিয়ে স্প্লিট করার কারণে এটি লাইন বাই লাইন ডাটা রিড করবে
+        const names = text.split('\n').map(n => n.trim()).filter(n => n !== "");
+        
+        if(names.length > 0) {
+            totalRollsInput.value = names.length;
+            tableBody.innerHTML = ''; 
+            generateTable(names.length);
+            names.forEach((name, index) => {
+                const roll = index + 1;
+                const input = document.getElementById(`name-${roll}`);
+                if(input) input.value = name;
+            });
+            document.getElementById('bulkText').value = '';
+            document.getElementById('pasteAreaWrapper').style.display = 'none';
+            alert(`${toBengali(names.length)} টি নাম সফলভাবে লাইনের ক্রম অনুযায়ী টেবিলে বসানো হয়েছে। সংরক্ষণের জন্য সেইভ বাটনে ক্লিক করুন।`);
+        }
+    };
+
+    // কপি বাটন লজিক
+    document.getElementById('copyBtn').onclick = () => {
+        const total = tableBody.querySelectorAll('tr').length;
+        if(total === 0) return alert("কপি করার মতো কোনো নাম নেই!");
+        let clipboardText = "";
+        for(let i = 1; i <= total; i++) {
+            const nameVal = document.getElementById(`name-${i}`).value.trim();
+            clipboardText += nameVal + "\n";
+        }
+        const tempTextArea = document.createElement('textarea');
+        tempTextArea.value = clipboardText;
+        document.body.appendChild(tempTextArea);
+        tempTextArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempTextArea);
+        alert("সকল নাম কলাম আকারে কপি হয়েছে! এখন গুগল শিটের যেকোনো সেলে পেস্ট করতে পারবেন।");
+    };
+
+    window.onload = loadExistingData;
+</script>
+</body>
+</html>
