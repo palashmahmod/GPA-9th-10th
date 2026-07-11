@@ -29,7 +29,12 @@
         .teacher-info-bar .profile-img { border-color: #fff; }
         .teacher-info-bar .profile-name { color: #fff; }
         .logout-btn { background: #e74c3c; color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-top: 8px; font-weight: bold; }
-        .header { text-align: center; border-bottom: 2px solid #2c3e50; margin-bottom: 15px; padding-bottom: 10px; }
+        
+        /* নাম এন্ট্রি প্যানেল বাটন */
+        .entry-link-btn { width: 100%; padding: 12px; background: #8e44ad; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 15px; margin-bottom: 10px; cursor: pointer; transition: background 0.2s; }
+        .entry-link-btn:hover { background: #732d91; }
+
+        .header { text-align: center; border-bottom: 2px solid #2c3e50; margin-bottom: 10px; padding-bottom: 1px; }
         .header h1 { font-size: 1.3em; margin: 5px 0; color: #2c3e50; font-weight: bold; }
         
         #inputSection { padding: 15px; border: 1px solid #3498db; border-radius: 10px; background-color: #ebf5fb; margin-bottom: 20px; }
@@ -37,9 +42,9 @@
         .main-inputs input { width: 100%; padding: 10px; border: 2px solid #3498db; border-radius: 6px; font-size: 16px; font-weight: bold; }
         
         .subject-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
-        .subject-table th, .subject-table td { border: 1px solid #b2ebf2; padding: 8px 4px; text-align: center; font-size: 14px; }
+        .subject-table th, .subject-table td { width: 40%; border: 1px solid #b2ebf2; padding: 2px 2px; text-align: center; font-size: 14px; }
         .edit-btn { cursor: pointer; color: #3498db; background: none; border: none; font-size: 12px; font-weight: bold; }
-        .mark-input { width: 90%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; text-align: center; font-size: 16px; font-weight: bold; }
+        .mark-input { width: 90%; padding: 4px; border: 1px solid #ccc; border-radius: 4px; text-align: center; font-size: 16px; font-weight: bold; }
         
         .summary-box { background: #d4edda; padding: 10px; border: 1px solid #c3e6cb; margin-bottom: 15px; border-radius: 8px; text-align: center; font-weight: bold; display: none; }
         .button-group { display: flex; gap: 10px; }
@@ -49,11 +54,11 @@
         #saveBtn { background: #27ae60; }
         
         .report-section { margin-top: 25px; }
-        .report-table { width: 100%; border-collapse: collapse; background: white; margin-top: 10px; }
-        .report-table th, .report-table td { border: 1px solid #333; padding: 8px 4px; text-align: center; font-size: 13px; font-weight: bold; }
+        .report-table { width: 230%; border-collapse: collapse; background: white; margin-top: 10px; }
+        .report-table th, .report-table td { border: 1px solid #333; padding: 1px 2px; text-align: center; font-size: 12px; font-weight: bold; }
         .st-input { width: 100%; border: none; background: transparent; text-align: center; font-weight: bold; }
         
-        .row-del-btn { background: #e74c3c; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; }
+        .row-del-btn { background: #e74c3c; color: white; border: none; padding: 1px 2px; border-radius: 2px; cursor: pointer; font-size: 10px; font-weight: bold; }
         .row-del-btn:hover { background: #c0392b; }
         
         .copy-btn { width: 100%; padding: 16px; background: #2c3e50; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; margin: 20px 0; cursor: pointer; }
@@ -90,6 +95,9 @@
         <br>
         <button class="logout-btn" id="logoutBtn">লগআউট করুন</button>
     </div>
+
+    <!-- নাম এন্ট্রি প্যানেল ওপেন করার নতুন বাটন -->
+    <button class="entry-link-btn" onclick="location.href='students_entry.html'">👥 শিক্ষার্থীদের নাম এন্ট্রি প্যানেল</button>
 
     <!-- হেডার টাইটেল -->
     <div class="header">
@@ -130,12 +138,12 @@
             <table class="report-table">
                 <thead>
                     <tr>
-                        <th>নতুন রোল</th>
+                        <th>সিরিয়াল নং</th>
                         <th>নাম</th>
-                        <th>পূর্ব রোল</th>
+                        <th>রোল নং</th>
                         <th>নম্বর</th>
                         <th>GPA</th>
-                        <th>মেধা</th>
+                        <th>মেধাস্থান</th>
                         <th>উপবৃত্তি</th>
                         <th>অ্যাকশন</th>
                     </tr>
@@ -167,7 +175,6 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-
     let currentUserId = localStorage.getItem('class9_logged_id') || null;
     const SUB_KEY = 'class9_v20_subs';
     
@@ -175,7 +182,7 @@
         { id: 'bn1', name: 'বাংলা ১ম', pair: 'bn' }, { id: 'bn2', name: 'বাংলা ২য়', pair: 'bn' },
         { id: 'en1', name: 'ইংরেজি ১ম', pair: 'en' }, { id: 'en2', name: 'ইংরেজি ২য়', pair: 'en' },
         { id: 'math', name: 'গণিত' }, { id: 'reli', name: 'ধর্ম' },
-        { id: 'sc', name: 'বিজ্ঞান/বিঃ ও বিঃ' }, { id: 'g1', name: 'груп-১' },
+        { id: 'sc', name: 'বিজ্ঞান/বিঃ ও বিঃ' }, { id: 'g1', name: 'গ্রুপ-১' },
         { id: 'g2', name: 'গ্রুপ-২' }, { id: 'g3', name: 'গ্রুপ-৩' },
         { id: 'opt', name: 'ঐচ্ছিক', isOptional: true }, { id: 'ict', name: 'তথ্য' }
     ];
@@ -215,6 +222,29 @@
             const savedSubs = localStorage.getItem(SUB_KEY);
             if (savedSubs) subjects = JSON.parse(savedSubs);
             renderInputs();
+
+            // =========================================================
+            // 📢 রোল লেখার সাথে সাথে অটো নাম লোড করার লজিক 📢
+            // =========================================================
+            document.getElementById('currentRoll').oninput = function() {
+                const roll = this.value.trim();
+                if (!roll) { 
+                    document.getElementById('studentName').value = ''; 
+                    return; 
+                }
+                
+                const configRef = ref(db, `users/${currentUserId}/config/${roll}`);
+                get(configRef).then((snapshot) => {
+                    if (snapshot.exists()) {
+                        document.getElementById('studentName').value = snapshot.val();
+                    } else {
+                        document.getElementById('studentName').value = '';
+                    }
+                }).catch(() => {
+                    document.getElementById('studentName').value = '';
+                });
+            };
+            // =========================================================
         }
     }
 
@@ -440,7 +470,7 @@
                 
                 if (confirm(`আপনি কি নিশ্চিতভাবে ${studentIdentifier}-এর তথ্য ডেটাবেজ থেকে মুছে ফেলতে চান?`)) {
                     const singleRecordRef = ref(db, `users/${currentUserId}/results/${roll}`);
-                    remove(singleRecordRef).catch(() => alert("মুছতে ব্যর্থ হয়েছে।"));
+                    remove(singleRecordRef).catch(() => alert("মুছতে ব্যর্থ হয়েছে।"));
                 }
             };
         });
@@ -458,7 +488,7 @@
 
     function copyTableOnly() {
         if (allResults.length === 0) return alert("তথ্য নেই!");
-        let rows = "সিরিয়াল নং\tশিক্ষার্থীদের নাম\tরোল নম্বর\tমোট নম্বর\tGPA\tমেধাস্থান\tউপবৃত্তি\n";
+        let rows = "সিরিয়াল নং\tशिक्षार्थियों नाम\tরোল নম্বর\tমোট নম্বর\tGPA\tমেধাস্থান\tউপবৃত্তি\n";
         allResults.forEach((r, i) => {
             let gpaVal = (r.fail > 0) ? "F" + r.fail : toBengali(r.gpa.toFixed(2), true);
             rows += `${toBengali(i+1, true)}\t${r.name || ''}\t${toBengali(r.roll, true)}\t${toBengali(r.marks, true)}\t${gpaVal}\t${getMeritText(i+1)}\t${r.stipend || ''}\n`;
@@ -478,7 +508,7 @@
             remove(allResultsRef).then(() => {
                 allResults = [];
                 updateReport();
-            }).catch(() => alert("তথ্য মুছতে সমস্যা হয়েছে।"));
+            }).catch(() => alert("তথ্য মুছতে সমস্যা হয়েছে।"));
         } 
     }
 
