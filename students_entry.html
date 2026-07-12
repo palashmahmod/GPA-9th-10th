@@ -25,13 +25,13 @@
         /* ৩য় ও ৪র্থ লাইন: আকর্ষণীয় হেডার */
         .title-section { text-align: center; margin: 20px 0; }
         .main-title { font-size: 26px; color: #2c3e50; margin: 0; font-weight: 800; letter-spacing: 1px; background: linear-gradient(45deg, #2c3e50, #3498db); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .sub-title { font-size: 16px; color: #7f8c8d; margin: 5px 0 0 0; font-weight: bold; }
+        .sub-title { font-size: 20px; color: black; margin: 5px 0 0 0; font-weight: bold; }
 
         /* ৬ষ্ঠ লাইন: কালো রঙের ডিভাইডার */
         .divider { height: 3px; background: #2c3e50; margin: 15px 0; border: none; border-radius: 2px; }
 
         /* ৭ম লাইন: রোল নির্ধারণকারী ইনপুট ও OK বাটন */
-        .roll-config { display: flex; align-items: center; justify-content: center; gap: 10px; background: #f8f9fa; padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
+        .roll-config { display: flex; align-items: center; justify-content: center; gap: 10px; background: #f8f9fa; padding: 12px; font-size: 13px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
         .roll-config label { font-weight: bold; color: #4a5568; }
         .roll-config input { width: 90px; padding: 8px; border: 2px solid #cbd5e0; border-radius: 6px; text-align: center; font-size: 16px; font-weight: bold; color: #2d3748; }
         .btn-ok { background-color: #e67e22; color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: background 0.2s; font-size: 14px; }
@@ -79,7 +79,7 @@
     <!-- ৩য় ও ৪র্থ লাইন: হেডার টাইটেল -->
     <div class="title-section">
         <div class="main-title">শিক্ষার্থীদের নাম এন্ট্রি</div>
-        <div class="sub-title">৯ম থেকে ১০ম</div>
+        <div class="sub-title"><u>৯ম থেকে ১০ম</u></div>
     </div>
 
     <!-- ৬ষ্ঠ লাইন: কালো ডিভাইডার -->
@@ -87,9 +87,9 @@
 
     <!-- ৭ম লাইন: রোল সংখ্যা নির্ধারণ এবং ওকে বাটন -->
     <div class="roll-config">
-        <label for="totalRolls">মোট শিক্ষার্থী সংখ্যা:</label>
+        <label for="totalRolls">শিক্ষার্থী সংখ্যা:</label>
         <input type="number" id="totalRolls" min="0" max="200" value="0">
-        <button class="btn-ok" id="okBtn">ঠিক আছে</button>
+        <button class="btn-ok" id="okBtn">OK</button>
     </div>
 
     <!-- টেবিল এরিয়া -->
