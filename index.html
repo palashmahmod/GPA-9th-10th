@@ -488,7 +488,7 @@
 
     function copyTableOnly() {
         if (allResults.length === 0) return alert("তথ্য নেই!");
-        let rows = "সিরিয়াল নং\tशिक्षार्थियों नाम\tরোল নম্বর\tমোট নম্বর\tGPA\tমেধাস্থান\tউপবৃত্তি\n";
+        let rows = "সিরিয়াল নং\tশিক্ষার্থীদের নাম\tরোল নম্বর\tমোট নম্বর\tGPA\tমেধাস্থান\tউপবৃত্তি\n";
         allResults.forEach((r, i) => {
             let gpaVal = (r.fail > 0) ? "F" + r.fail : toBengali(r.gpa.toFixed(2), true);
             rows += `${toBengali(i+1, true)}\t${r.name || ''}\t${toBengali(r.roll, true)}\t${toBengali(r.marks, true)}\t${gpaVal}\t${getMeritText(i+1)}\t${r.stipend || ''}\n`;
