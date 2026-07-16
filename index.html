@@ -33,7 +33,6 @@
         /* নাম এন্ট্রি প্যানেল বাটন */
         .entry-link-btn { width: 100%; padding: 12px; background: #8e44ad; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 15px; margin-bottom: 10px; cursor: pointer; transition: background 0.2s; }
         .entry-link-btn:hover { background: #732d91; }
-
         .header { text-align: center; border-bottom: 2px solid #2c3e50; margin-bottom: 10px; padding-bottom: 1px; }
         .header h1 { font-size: 1.3em; margin: 5px 0; color: #2c3e50; font-weight: bold; }
         
@@ -67,7 +66,6 @@
     </style>
 </head>
 <body>
-
 <!-- লগইন ওভারলে স্ক্রিন -->
 <div id="loginOverlay" style="display:none;">
     <div class="login-box">
@@ -83,7 +81,6 @@
         <button id="loginBtn">প্রবেশ করুন</button>
     </div>
 </div>
-
 <div class="container">
     <!-- ডাইনামিক শিক্ষক ও ক্লাস ইনফো বার -->
     <div id="teacherInfoBar" class="teacher-info-bar" style="display: none;">
@@ -95,21 +92,17 @@
         <br>
         <button class="logout-btn" id="logoutBtn">লগআউট করুন</button>
     </div>
-
     <!-- নাম এন্ট্রি প্যানেল ওপেন করার নতুন বাটন -->
     <button class="entry-link-btn" onclick="location.href='students_entry.html'">👥 শিক্ষার্থীদের নাম এন্ট্রি প্যানেল</button>
-
     <!-- হেডার টাইটেল -->
     <div class="header">
         <h1>GPA Calculation (9th-10th)</h1>
     </div>
-
     <div id="inputSection">
         <div class="main-inputs">
             <input type="text" id="currentRoll" placeholder="রোল নং" inputmode="decimal">
             <input type="text" id="studentName" placeholder="শিক্ষার্থীদের নাম">
         </div>
-
         <table class="subject-table">
             <thead>
                 <tr>
@@ -121,17 +114,14 @@
             </thead>
             <tbody id="subjectInputs"></tbody>
         </table>
-
         <div id="quickSummary" class="summary-box">
             মোট নম্বর: <span id="q-total">-</span> | GPA: <span id="q-gpa">-</span> | ফলাফল: <span id="q-grade">-</span>
         </div>
-
         <div class="button-group">
             <button id="calcBtn">ফলাফল দেখুন</button>
             <button id="saveBtn" disabled>সংরক্ষণ করুন</button>
         </div>
     </div>
-
     <div class="report-section">
         <h3 style="text-align: center;">সংরক্ষিত মেধাতালিকা</h3>
         <div style="overflow-x: auto;">
@@ -152,17 +142,14 @@
             </table>
         </div>
     </div>
-
     <button class="copy-btn" id="copyBtn">📋 মেধাতালিকা কপি করুন (Sheet1 এর জন্য)</button>
     <div id="dataActions"><button id="clearBtn">⚠️ সকল তথ্য মুছে ফেলুন</button></div>
     <div class="footer-text">POWERED BY PALASH MAHMOD</div>
 </div>
-
 <!-- Firebase Realtime Logic Integration -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
-    import { getDatabase, ref, get, child, onValue, set, remove } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
-
+    import { getDatabase, ref, get, child, onValue, update, remove } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
     const firebaseConfig = {
         apiKey: "AIzaSyA_NQ7MQTKkQbvVXGAxUAAL9O50Z7OVOvw",
         authDomain: "gpa-calculation-710dc.firebaseapp.com",
@@ -172,10 +159,10 @@
         appId: "1:1092344384301:web:77350bd13958c125ac61a4",
         measurementId: "G-19E7DVEF4M"
     };
-
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     let currentUserId = localStorage.getItem('class9_logged_id') || null;
+    let loggedInPin = localStorage.getItem('class9_logged_pin') || null; // লগইন করা পিন ট্র্যাক করার ভেরিয়েবল
     const SUB_KEY = 'class9_v20_subs';
     
     let subjects = [
@@ -189,7 +176,6 @@
     
     let allResults = [];
     let currentCalc = null;
-
     function init() {
         if (!currentUserId) {
             document.getElementById('loginOverlay').style.display = 'flex';
@@ -204,12 +190,18 @@
                     forceLogout();
                 } else {
                     const userData = snapshot.val();
+                    
+                    // পিন নম্বর পরিবর্তন চেক করার রিয়েল-টাইম লজিক
+                    if (loggedInPin && userData.pin !== loggedInPin) {
+                        alert("আপনার পিন নম্বরটি পরিবর্তন করা হয়েছে! দয়া করে নতুন পিন দিয়ে আবার লগইন করুন।");
+                        forceLogout();
+                        return;
+                    }
                     document.getElementById('infoName').innerText = userData.teacherName || '---';
                     document.getElementById('infoClass').innerText = userData.className || '---';
                     document.getElementById('infoSection').innerText = userData.sectionName || '---';
                     document.getElementById('infoYear').innerText = userData.year || '---';
                     document.getElementById('teacherInfoBar').style.display = 'block';
-
                     if (userData.results) {
                         allResults = Object.keys(userData.results).map(key => userData.results[key]);
                     } else {
@@ -218,11 +210,9 @@
                     updateReport();
                 }
             });
-
             const savedSubs = localStorage.getItem(SUB_KEY);
             if (savedSubs) subjects = JSON.parse(savedSubs);
             renderInputs();
-
             // =========================================================
             // 📢 রোল লেখার সাথে সাথে অটো নাম লোড করার লজিক 📢
             // =========================================================
@@ -247,7 +237,6 @@
             // =========================================================
         }
     }
-
     async function checkLogin() {
         const id = document.getElementById('loginId').value.trim();
         const pin = document.getElementById('loginPin').value.trim();
@@ -263,7 +252,9 @@
                 const userData = snapshot.val();
                 if (userData.pin === pin) {
                     localStorage.setItem('class9_logged_id', id);
+                    localStorage.setItem('class9_logged_pin', pin); // ব্রাউজারে পিন নম্বরও সেভ করা হচ্ছে
                     currentUserId = id;
+                    loggedInPin = pin;
                     alert("লগইন সফল হয়েছে!");
                     location.reload();
                 } else {
@@ -276,7 +267,6 @@
             alert("সার্ভার ত্রুটি! ইন্টারনেট সংযোগ চেক করুন।");
         }
     }
-
     function handleLogout() {
         const pass = prompt("লগআউট করতে সিকিউরিটি পাসওয়ার্ড দিন:");
         if (pass === 'pm5522') {
@@ -285,12 +275,11 @@
             alert("ভুল পাসওয়ার্ড!");
         }
     }
-
     function forceLogout() {
         localStorage.removeItem('class9_logged_id');
+        localStorage.removeItem('class9_logged_pin'); // ব্রাউজার মেমোরি থেকে পিন মুছে ফেলা হচ্ছে
         location.reload();
     }
-
     function toBengali(num, forceText = false) {
         if (num === null || num === undefined) return "";
         let n = num.toString();
@@ -298,7 +287,6 @@
         let result = n.split('').map(d => bDigits[d] || d).join('');
         return forceText ? "\u200C" + result : result;
     }
-
     function renderInputs() {
         let html = '';
         for (let i = 0; i < subjects.length; i++) {
@@ -332,7 +320,6 @@
         });
         setupNav();
     }
-
     function editSub(idx) {
         let n = prompt("নাম:", subjects[idx].name);
         if (n) { 
@@ -341,7 +328,6 @@
             renderInputs(); 
         }
     }
-
     function setupNav() {
         const inputs = document.querySelectorAll('.mark-input, #currentRoll, #studentName');
         inputs.forEach((inp, idx) => {
@@ -354,7 +340,6 @@
             };
         });
     }
-
     function getGrade(m, failManual) {
         if (failManual || m < 33) return { gp: 0.0, gr: 'F' };
         if (m >= 80) return { gp: 5.0, gr: 'A+' };
@@ -365,7 +350,6 @@
         if (m >= 33) return { gp: 1.0, gr: 'D' };
         return { gp: 0.0, gr: 'F' };
     }
-
     function calculateSSC() {
         let totalMarks = 0, totalGP = 0, failCount = 0;
         let pMarks = { bn: 0, en: 0 }, pFail = { bn: false, en: false };
@@ -392,7 +376,6 @@
                 }
             }
         });
-
         ['bn', 'en'].forEach(p => {
             let avgMark = pMarks[p] / 2;
             let isPairFailed = pFail[p] || (pMarks[p] < 66);
@@ -402,7 +385,6 @@
             if (res.gp === 0) failCount++;
             totalGP += res.gp;
         });
-
         let avgGPA = (failCount > 0) ? 0 : Math.min(5, totalGP / 9); 
         let gpaShow = (failCount > 0) ? "F" + failCount : toBengali(avgGPA.toFixed(2));
         
@@ -418,13 +400,13 @@
         };
         document.getElementById('saveBtn').disabled = false;
     }
-
     function saveResult() {
         if (!currentCalc.roll) return alert("রোল দিন");
         
-        const resultRef = ref(db, `users/${currentUserId}/results/${currentCalc.roll}`);
+        const updates = {};
+        updates[`users/${currentUserId}/results/${currentCalc.roll}`] = currentCalc;
         
-        set(resultRef, currentCalc).then(() => {
+        update(ref(db), updates).then(() => {
             document.getElementById('saveBtn').disabled = true;
             document.querySelectorAll('.mark-input').forEach(i => i.value = '');
             document.getElementById('currentRoll').value = '';
@@ -435,7 +417,6 @@
             alert("ফলাফল সংরক্ষণে ব্যর্থ! ইন্টারনেট চেক করুন।");
         });
     }
-
     function updateReport() {
         allResults.sort((a, b) => (a.fail !== b.fail) ? a.fail - b.fail : (b.gpa !== a.gpa) ? b.gpa - a.gpa : b.marks - a.marks);
         
@@ -454,14 +435,12 @@
             </tr>`;
         });
         document.getElementById('reportTableBody').innerHTML = html;
-
         allResults.forEach((r, i) => {
             const stEl = document.getElementById(`stipend-${i}`);
             if(stEl) {
                 stEl.onchange = function() { updateStipend(r.roll, this.value); };
             }
         });
-
         document.querySelectorAll('.row-del-btn').forEach(btn => {
             btn.onclick = function() {
                 const roll = this.getAttribute('data-roll');
@@ -475,17 +454,15 @@
             };
         });
     }
-
     function getMeritText(pos) {
         const list = ["","১ম","২য়","৩য়","৪র্থ","৫ম","৬ষ্ঠ","৭ম","৮ম","৯ম","১০ম"];
         return list[pos] || toBengali(pos) + "তম";
     }
-
     function updateStipend(roll, val) {
-        const stipendRef = ref(db, `users/${currentUserId}/results/${roll}/stipend`);
-        set(stipendRef, val);
+        const updates = {};
+        updates[`users/${currentUserId}/results/${roll}/stipend`] = val;
+        update(ref(db), updates);
     }
-
     function copyTableOnly() {
         if (allResults.length === 0) return alert("তথ্য নেই!");
         let rows = "সিরিয়াল নং\tশিক্ষার্থীদের নাম\tরোল নম্বর\tমোট নম্বর\tGPA\tমেধাস্থান\tউপবৃত্তি\n";
@@ -501,7 +478,6 @@
         document.body.removeChild(el);
         alert("মেধাতালিকা সফলভাবে কপি হয়েছে!");
     }
-
     function clearAllData() { 
         if(confirm("আপনি কি নিশ্চিতভাবে এই আইডির সমস্ত ফলাফল ফায়ারবেস থেকে মুছে ফেলবেন?")) { 
             const allResultsRef = ref(db, `users/${currentUserId}/results`);
@@ -511,7 +487,6 @@
             }).catch(() => alert("তথ্য মুছতে সমস্যা হয়েছে।"));
         } 
     }
-
     document.getElementById('loginBtn').onclick = checkLogin;
     document.getElementById('logoutBtn').onclick = handleLogout;
     document.getElementById('calcBtn').onclick = calculateSSC;
